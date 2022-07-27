@@ -8,11 +8,23 @@
 import SwiftUI
 import MapKit
 
+import CoreLocation
+
 struct ContentView: View {
     
     @ObservedObject var manager = LocationManager()
     @State var region = MKCoordinateRegion()
     @State var trackingMode = MapUserTrackingMode.follow
+    
+    @State var kyori = 0
+    
+    
+    @State private var galleLan = 35.76642
+    @State private var galleLon = 139.65058
+    
+    
+    
+    
     
     var body: some View {
         let heading   = $manager.heading.wrappedValue
@@ -24,8 +36,13 @@ struct ContentView: View {
             
             VStack{
                 
-                
                 Spacer(minLength: 800)
+                
+                HStack{
+                    //                    TextField("35.69854", value: $galleLan, formatter: NumberFormatter())
+                    //                    TextField("139.69601", value: $galleLon, formatter: NumberFormatter())
+                }
+                
                 Map(coordinateRegion: $region,
                     interactionModes: .zoom,
                     showsUserLocation: true,
@@ -34,7 +51,7 @@ struct ContentView: View {
                 
                 .frame(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.width)
                 
-    
+                
                 
                 .clipShape(Circle())
                 
@@ -56,42 +73,79 @@ struct ContentView: View {
             }
             
             VStack{
-                            Text("緯度：\(latitude) 経度： \(longitude)")
+                Text("緯度：\(latitude) 経度： \(longitude)")
                     .onChange(of: latitude) { newValue in
-                  
-                        manager.kakudo = manager.angle(currentLatitude: latitude, currentLongitude: longitude, targetLatitude: 35.766402, targetLongitude: 139.650894)
+                        
+                        
+                        
+                        
+                        //２点間の距離を求めてる
+                        manager.kakudo = manager.angle(currentLatitude: latitude, currentLongitude: longitude, targetLatitude: galleLan, targetLongitude: galleLon)
+                        
+                        
+                        
+                        
+                        
+                        kyori = Int(CLLocation(latitude: latitude ,
+                                               longitude: longitude).distance(from: CLLocation(latitude: galleLan ,
+                                                                                               longitude: 139.69662)))
                     }
                 //            Text("北方向: \(heading)")
                 Text("\(heading)")
                 Text("方位角\(manager.kakudo)")
-//                Text("\(-heading + Double(manager.kakudo))")
+                //                Text("\(-heading + Double(manager.kakudo))")
                 
                 
                 
-//                if(Int(heading)<manager.kakudo){
+                //                if(Int(heading)<manager.kakudo){
+                
+                if(kyori < 5){
+                    
+                    ZStack{
+                        Image(systemName: "flag.2.crossed.fill")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .padding(/*@START_MENU_TOKEN@*/.all, 100.0/*@END_MENU_TOKEN@*/)
+                        Text("あと\(kyori)m")
+                            .font(.title)
+                        
+                            .fontWeight(.black)
+                            .foregroundColor(Color.blue)
+                        //
+                    }
+                    
+                    
+                }else{
                     ZStack{
                         Image(systemName: "location.north")
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .padding(/*@START_MENU_TOKEN@*/.all, 100.0/*@END_MENU_TOKEN@*/)
-                        Text("aaaa")
+                        Text("\(kyori)")
+                            .foregroundColor(Color.blue)
+                        
                     }
-                    
                     .rotationEffect(Angle(degrees:  Double(manager.kakudo)-heading))
-//                }else if(Int(heading)>manager.kakudo){
-//                    Image(systemName: "location.north")
-//                        .resizable()
-//                        .aspectRatio(contentMode: .fit)
-//                        .padding(/*@START_MENU_TOKEN@*/.all, 100.0/*@END_MENU_TOKEN@*/)
-//                    .rotationEffect(Angle(degrees:  Double(manager.kakudo)+heading))
-//                }
-                    
-//                    .rotationEffect(Angle(degrees:Double(manager.kakudo)))
+                }
+                
+                
+                //                }else if(Int(heading)>manager.kakudo){
+                //                    Image(systemName: "location.north")
+                //                        .resizable()
+                //                        .aspectRatio(contentMode: .fit)
+                //                        .padding(/*@START_MENU_TOKEN@*/.all, 100.0/*@END_MENU_TOKEN@*/)
+                //                    .rotationEffect(Angle(degrees:  Double(manager.kakudo)+heading))
+                //                }
+                
+                //                    .rotationEffect(Angle(degrees:Double(manager.kakudo)))
                 
                 
                 
                 
             }
+        } .onAppear {
+            //スリープさせない
+            UIApplication.shared.isIdleTimerDisabled = true
         }
     }
 }
