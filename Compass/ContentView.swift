@@ -27,6 +27,7 @@ struct ContentView: View {
                 
                 Spacer(minLength: 800)
                 Map(coordinateRegion: $region,
+                    interactionModes: .zoom,
                     showsUserLocation: true,
                     userTrackingMode: $trackingMode)
                 
